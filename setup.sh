@@ -14,7 +14,8 @@ $PIP install addict cython numpy albumentations==0.3.2 imagecorruptions matplotl
 $PIP install nltk lmdb editdistance opencv-python requests onnx SharedArray tqdm pyclipper imgaug==0.3.0 Shapely Polygon3 scikit-image prettytable transformers seqeval Levenshtein networkx bs4 distance apted lxml jsonlines
 
 ###### install mmcv ######
-$PIP install mmcv-full==1.3.4
+mim install mmcv-full==1.4.0
+
 
 ###### install mmdetection #####
 $PIP install mmdet==2.11.0

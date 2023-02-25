@@ -5,5 +5,6 @@ export PATH=/usr/local/miniconda3/bin/:$PATH
 
 export CUDA_VISIBLE_DEVICES=0
 
-DAVAROCR_PATH=/path/to/Davar-Lab-OCR/
-python $DAVAROCR_PATH/tools/test.py  ./configs/publaynet_x101.py ./log/publaynet_x101/Best_checkpoint.pth --eval bbox
+DAVAROCR_PATH=/home/jupyter/kweston_persistent_workspace/DAVAR-Lab-OCR
+
+python $DAVAROCR_PATH/tools/test.py  ./config/publaynet_x101.py ./log/publaynet_x101/Best_checkpoint.pth --eval bbox

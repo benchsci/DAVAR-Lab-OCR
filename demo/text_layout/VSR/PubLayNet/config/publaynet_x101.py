@@ -1,3 +1,5 @@
+DAVAROCR_PATH='/home/jupyter/kweston_persistent_workspace/DAVAR-Lab-OCR'
+BERT_MODEL_PATH='/home/jupyter/.cache/huggingface/hub/models--bert-base-uncased/snapshots/0a6aa9128b6194f4f3c4db429b6cb4891cdb421b'
 # model settings
 model = dict(
 	type='VSR',
@@ -9,7 +11,7 @@ model = dict(
 	),
 	sentencegrid=dict(
 		type='SentencegridEmbedding',
-		auto_model_path="/path/to/Davar-Lab-OCR/demo/text_layout/VSR/common/bert-base-uncased/",
+		auto_model_path=BERT_MODEL_PATH,
 		embedding_dim=64,
 	),
 	# multimodal merge
@@ -265,7 +267,7 @@ train_pipeline = [
 	dict(type='Normalize', **img_norm_cfg),
 	dict(type='Pad', size_divisor=32),
 	# CharTokenizer for chargrid
-	dict(type='CharTokenize', vocab="/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/char_vocab.txt", targets=['gt_ctexts']),
+	dict(type='CharTokenize', vocab=DAVAROCR_PATH + "/demo/text_layout/datalist/PubLayNet/char_vocab.txt", targets=['gt_ctexts']),
 	dict(type='MMLAFormatBundle'),
 	dict(type='DavarCollect', keys=['img', 'gt_bboxes', 'gt_texts', 'gt_bboxes_2', 'gt_labels_2', 'gt_masks_2',
 	                                 'gt_ctexts', 'gt_cbboxes']),
@@ -301,7 +303,7 @@ test_pipeline = [
 			dict(type='Normalize', **img_norm_cfg),
 			dict(type='Pad', size_divisor=32),
 			# CharTokenizer for chargrid
-			dict(type='CharTokenize', vocab="/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/char_vocab.txt",
+			dict(type='CharTokenize', vocab=DAVAROCR_PATH + "/demo/text_layout/datalist/PubLayNet/char_vocab.txt",
 			     targets=['gt_ctexts']),
 			dict(type='MMLAFormatBundle'),
 			dict(type='DavarCollect', keys=['img', 'gt_bboxes', 'gt_texts', 'gt_ctexts', 'gt_cbboxes']),
@@ -313,27 +315,27 @@ data = dict(
 	workers_per_gpu=2,
 	train=dict(
 		type=dataset_type,
-		ann_file=['/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/Datalist/datalist_train.json'],
-		img_prefix='/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/Images/train/',
+		ann_file=[DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/Datalist/datalist_train_sample.json'],
+		img_prefix=DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/Images/train/',
 		pipeline=train_pipeline,
-		ann_prefix='/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/Annos/train/',
+		ann_prefix=DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/Annos/train/',
 		classes=('others', 'text', 'title', 'list', 'table', 'figure')),
 	val=dict(
 		type=dataset_type,
-		ann_file=['/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/Datalist/datalist_val.json'],
-		img_prefix='/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/Images/dev/',
+		ann_file=[DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/Datalist/datalist_val_sample.json'],
+		img_prefix=DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/',
 		pipeline=test_pipeline,
-		ann_prefix='/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/Annos/dev/',
+		ann_prefix=DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/Annos/dev/',
 		classes=('text', 'title', 'list', 'table', 'figure'),
-		coco_ann='/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/coco_val.json'),
+		coco_ann=DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/coco_val.json'),
 	test=dict(
 		type=dataset_type,
-		ann_file=['/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/Datalist/datalist_val.json'],
-		img_prefix='/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/Images/dev/',
+		ann_file=[DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/Datalist/datalist_val_sample.json'],
+		img_prefix=DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/',
 		pipeline=test_pipeline,
-		ann_prefix='/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/Annos/dev/',
+		ann_prefix=DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/Annos/dev/',
 		classes=('text', 'title', 'list', 'table', 'figure'),
-		coco_ann='/path/to/Davar-Lab-OCR/demo/text_layout/datalist/PubLayNet/coco_val.json')
+		coco_ann=DAVAROCR_PATH + '/demo/text_layout/datalist/PubLayNet/coco_val.json')
 	)
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
@@ -358,8 +360,8 @@ log_config = dict(
 # yapf:enable
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir='/path/to/Davar-Lab-OCR/demo/text_layout/VSR/PubLayNet/log/publaynet_x101/'
-load_from = '/path/to/Davar-Lab-OCR/demo/text_layout/VSR/common/mask_rcnn_x101_64x4d_fpn_1x_coco_20200201-9352eb0d_with_semantic.pth'
+work_dir=DAVAROCR_PATH + '/demo/text_layout/VSR/PubLayNet/log/publaynet_x101/'
+load_from = DAVAROCR_PATH + '/demo/text_layout/VSR/common/mask_rcnn_x101_64x4d_fpn_1x_coco_20200201-9352eb0d_with_semantic.pth'
 resume_from = None
 workflow = [('train', 1)]
 evaluation = dict(save_best='bbox_mAP', interval=1, metric='bbox', rule="greater",)
