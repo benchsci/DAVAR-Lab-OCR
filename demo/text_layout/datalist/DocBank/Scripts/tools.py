@@ -6,28 +6,39 @@ import glob
 import multiprocessing
 from tqdm import tqdm
 import numpy as np
+import argparse
+from pathlib import Path
+import sys
+
+dirname = os.path.join(os.path.dirname(__file__), 'DocBankLoader-master')
+sys.path.append(dirname)
 
 from docbank_loader import DocBankLoader, DocBankConverter
 
 # txt_dir = 'demo/txt'
 # img_dir = 'demo/img'
 
-txt_dir = 'DocBank_500K_txt'
-img_dir = 'DocBank_500K_ori_img'
+parser = argparse.ArgumentParser()
+parser.add_argument('--txt_dir', type=str, default='DocBank_500K_txt', required=True)
+parser.add_argument('--img_dir', type=str, default='DocBank_500K_ori_img', required=True)
+parser.add_argument('--json_out_dir', type=str, default='DocBank_500K_json', required=True)
+parser.add_argument('--force', '-f', action='store_true', help='force to overwrite existing files')
+parser.add_argument('--debug_output_dir', type=Path, default=None, help='If specified we will write debug images to this directory')
+args = parser.parse_args()
 
-json_out_dir = 'DocBank_500K_json'
-loader = DocBankLoader(txt_dir=txt_dir, img_dir=img_dir)
+loader = DocBankLoader(txt_dir=args.txt_dir, img_dir=args.img_dir)
 converter = DocBankConverter(loader)
 
-examples = glob.glob(os.path.join(txt_dir, '*.txt'))
+examples = glob.glob(os.path.join(args.txt_dir, '*.txt'))
 examples = [os.path.basename(per) for per in examples]
+
 
 def worker(example):
 	example = loader.get_by_filename(example)
 
 	# filter not processed file.
-	save_name = os.path.join(json_out_dir, os.path.basename(example.filepath).replace('.jpg', '.json'))
-	if not os.path.exists(save_name):
+	save_name = os.path.join(args.json_out_dir, os.path.basename(example.filepath).replace('.jpg', '.json'))
+	if not os.path.exists(save_name) or args.force:
 		print(save_name)
 
 		formatted_json = {}
@@ -57,7 +68,7 @@ def worker(example):
 		content_ann['cares'] = [1]*len(attributes_list)
 
 		# layout level
-		new_filepath = os.path.basename(filepath.replace(txt_dir, img_dir))
+		new_filepath = os.path.basename(filepath.replace(args.txt_dir, args.img_dir))
 		layout_examples = converter.get_by_filename(new_filepath)
 		layout_bboxes = layout_examples.print_bbox().split('\n')
 		layout_bboxes = [per.split('\t') for per in layout_bboxes]
@@ -76,14 +87,17 @@ def worker(example):
 		formatted_json['content_ann2'] = content_ann2
 
 		# json output
-		save_name = os.path.join(json_out_dir, os.path.basename(filepath).replace('.jpg', '.json'))
+		save_name = os.path.join(args.json_out_dir, os.path.basename(filepath).replace('.jpg', '.json'))
 		if not os.path.exists(os.path.dirname(save_name)):
 			os.makedirs(os.path.dirname(save_name))
 		with open(save_name, 'w', encoding='utf8') as wf:
 			json.dump(formatted_json, wf)
 
 		# visualize
-		if 0:
+		if args.debug_output_dir:
+			debug_output_dir = args.debug_output_dir
+			debug_output_dir.mkdir(parents=True, exist_ok=True)
+
 			color_map = {
 				'paragraph': (255, 0, 0),
 				'section': (0, 255, 0),
@@ -111,7 +125,7 @@ def worker(example):
 				cv2.rectangle(layout_img, (int(per_bbox[0]), int(per_bbox[1])), (int(per_bbox[2]), int(per_bbox[3])),
 				              color)
 
-			cv2.imwrite(os.path.basename(filepath), np.concatenate((img, layout_img), 1))
+			cv2.imwrite(str(debug_output_dir / Path(filepath).name), np.concatenate((img, layout_img), 1))
 
 # ## single process
 # for example in tqdm(examples):
@@ -120,6 +134,7 @@ def worker(example):
 ## multiple processes
 pool = multiprocessing.Pool(processes=50)
 for example in tqdm(examples):
-	pool.apply_async(worker, (example,))
+	# pool.apply_async(worker, (example,))
+	worker(example)
 pool.close()
 pool.join()

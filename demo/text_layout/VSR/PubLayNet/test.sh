@@ -7,4 +7,4 @@ export CUDA_VISIBLE_DEVICES=0
 
 DAVAROCR_PATH=/home/jupyter/kweston_persistent_workspace/DAVAR-Lab-OCR
 
-python $DAVAROCR_PATH/tools/test.py  ./config/publaynet_x101.py ./log/publaynet_x101/Best_checkpoint.pth --eval bbox
+python $DAVAROCR_PATH/tools/test.py  ./config/publaynet_x101.py ./log/publaynet_x101/Best_checkpoint.pth --eval bbox --show-dir showdir
