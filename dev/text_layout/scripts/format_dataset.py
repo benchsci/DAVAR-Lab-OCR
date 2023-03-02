@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 import shutil
 
-dirname = os.path.join(os.path.dirname(__file__), 'DocBankLoader-master')
+dirname = os.path.join(os.path.dirname(__file__), '../../../demo/text_layout/datalist/DocBank/Scripts/DocBankLoader-master')
 sys.path.append(dirname)
 
 from docbank_loader import DocBankLoader, DocBankConverter
