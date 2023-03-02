@@ -1,3 +1,5 @@
+# Adapted from https://github.com/doc-analysis/DocBank/blob/master/scripts/pdf_process.py
+
 import multiprocessing
 import argparse
 import pdfplumber
@@ -37,10 +39,15 @@ def within_bbox(bbox_bound, bbox_in):
     return iou > 0.95
 
 
-def worker(pdf_file, data_dir, output_dir, unified_output_dir: bool = False, max_image_dim: int = None):
+def worker(pdf_file, data_dir, output_dir, unified_output_dir: bool = False, max_image_dim: int = None, use_page_subdirs: bool = False):
 
 
-    pdf_images = pdf2image.convert_from_path(os.path.join(data_dir, pdf_file))
+    print(f"Processing {pdf_file}")
+    try:
+        pdf_images = pdf2image.convert_from_path(os.path.join(data_dir, pdf_file))
+    except Exception as e:
+        print(e)
+        return
     output_dir = Path(output_dir)
 
     page_tokens = []
@@ -52,6 +59,7 @@ def worker(pdf_file, data_dir, output_dir, unified_output_dir: bool = False, max
 
     for page_id in tqdm(range(len(pdf.pages))):
         tokens = []
+        print(f"Processing {pdf_file}:p{page_id}")
 
         this_page = pdf.pages[page_id]
         anno_img = np.ones([int(this_page.width), int(this_page.height)] + [3], dtype=np.uint8) * 255
@@ -137,35 +145,34 @@ def worker(pdf_file, data_dir, output_dir, unified_output_dir: bool = False, max
             fontname = 'default'
             tokens.append((word_text,) + figure_bbox + (fontname,))
 
-        for line in this_page.lines:
-            line_bbox = (float(line['x0']), float(line['top']), float(line['x1']), float(line['bottom']))
-            # format word_bbox
-            width = int(this_page.width)
-            height = int(this_page.height)
-            f_x0 = min(1000, max(0, int(line_bbox[0] / width * 1000)))
-            f_y0 = min(1000, max(0, int(line_bbox[1] / height * 1000)))
-            f_x1 = min(1000, max(0, int(line_bbox[2] / width * 1000)))
-            f_y1 = min(1000, max(0, int(line_bbox[3] / height * 1000)))
-            line_bbox = tuple([f_x0, f_y0, f_x1, f_y1])
+        # for line in this_page.lines:
+        #     line_bbox = (float(line['x0']), float(line['top']), float(line['x1']), float(line['bottom']))
+        #     # format word_bbox
+        #     width = int(this_page.width)
+        #     height = int(this_page.height)
+        #     f_x0 = min(1000, max(0, int(line_bbox[0] / width * 1000)))
+        #     f_y0 = min(1000, max(0, int(line_bbox[1] / height * 1000)))
+        #     f_x1 = min(1000, max(0, int(line_bbox[2] / width * 1000)))
+        #     f_y1 = min(1000, max(0, int(line_bbox[3] / height * 1000)))
+        #     line_bbox = tuple([f_x0, f_y0, f_x1, f_y1])
 
-            # plot annotation
-            x0, y0, x1, y1 = line_bbox
-            x0, y0, x1, y1 = int(x0 * width / 1000), int(y0 * height / 1000), int(x1 * width / 1000), int(
-                y1 * height / 1000)
-            anno_color = [0, 0, 0]
-            for x in range(x0, x1 + 1):
-                for y in range(y0, y1 + 1):
-                    anno_img[x, y] = anno_color
+        #     # plot annotation
+        #     x0, y0, x1, y1 = line_bbox
+        #     x0, y0, x1, y1 = int(x0 * width / 1000), int(y0 * height / 1000), int(x1 * width / 1000), int(
+        #         y1 * height / 1000)
+        #     anno_color = [0, 0, 0]
+        #     for x in range(x0, x1 + 1):
+        #         for y in range(y0, y1 + 1):
+        #             anno_img[x, y] = anno_color
 
-            line_bbox = tuple([str(t) for t in line_bbox])
-            word_text = '##LTLine##'
-            fontname = 'default'
-            tokens.append((word_text,) + line_bbox + (fontname, ))
+        #     line_bbox = tuple([str(t) for t in line_bbox])
+        #     word_text = '##LTLine##'
+        #     fontname = 'default'
+        #     tokens.append((word_text,) + line_bbox + (fontname, ))
 
         anno_img = np.swapaxes(anno_img, 0, 1)
         anno_img = Image.fromarray(anno_img, mode='RGB')
         page_tokens.append((page_id, tokens, anno_img))
-        print(f"Processing {pdf_file}")
 
         if unified_output_dir:
             txt_output_dir = output_dir
@@ -175,9 +182,6 @@ def worker(pdf_file, data_dir, output_dir, unified_output_dir: bool = False, max
             txt_output_dir = output_dir / 'txt'
             orig_output_dir = output_dir / 'orig'
             anno_output_dir = output_dir / 'anno'
-            txt_output_dir.mkdir(parents=True, exist_ok=True)
-            orig_output_dir.mkdir(parents=True, exist_ok=True)
-            anno_output_dir.mkdir(parents=True, exist_ok=True)
 
         imwidth, imheight = pdf_images[page_id].size
         max_dim = max(imwidth, imheight)
@@ -188,11 +192,22 @@ def worker(pdf_file, data_dir, output_dir, unified_output_dir: bool = False, max
             print(f"Resizing {pdf_file} from {imwidth}x{imheight} to {new_width}x{new_height}")
             pdf_images[page_id] = pdf_images[page_id].resize((new_width, new_height), Image.ANTIALIAS)
 
+        doc_fname = pdf_file.replace('.pdf', '')
+
+        if use_page_subdirs:
+            txt_output_dir = txt_output_dir / doc_fname
+            orig_output_dir = orig_output_dir / doc_fname
+            anno_output_dir = anno_output_dir / doc_fname
+
+        txt_output_dir.mkdir(parents=True, exist_ok=True)
+        orig_output_dir.mkdir(parents=True, exist_ok=True)
+        anno_output_dir.mkdir(parents=True, exist_ok=True)
+
         pdf_images[page_id].save(
-            os.path.join(orig_output_dir, pdf_file.replace('.pdf', '') + '_{}_ori.jpg'.format(str(page_id))))
+            os.path.join(orig_output_dir, doc_fname + '_{}_ori.jpg'.format(str(page_id))))
         anno_img.save(
-            os.path.join(anno_output_dir, pdf_file.replace('.pdf', '') + '_{}_ann.jpg'.format(str(page_id))))
-        with open(os.path.join(txt_output_dir, pdf_file.replace('.pdf', '') + '_{}.txt'.format(str(page_id))),
+            os.path.join(anno_output_dir, doc_fname + '_{}_ann.jpg'.format(str(page_id))))
+        with open(os.path.join(txt_output_dir, doc_fname + '_{}.txt'.format(str(page_id))),
                     'w',
                     encoding='utf8') as fp:
             for token in tokens:
@@ -223,20 +238,32 @@ if __name__ == '__main__':
         help="The maximum image dimension to use for the image. If the image is larger than this, it will be scaled down.",
     )
     parser.add_argument(
+        "--use_page_subdirs",
+        help="Whether to use subdirectories for separate pages from the same document",
+        action="store_true"
+    )
+    parser.add_argument(
         "--unified_output_dir",
         action='store_true',
         help="Whether to use the same output directory for all output file types",
+    )
+    parser.add_argument(
+        "--limit",
+        help="Limit the number of pdf files to process",
+        type=int,
+        default=None
     )
     args = parser.parse_args()
 
     pdf_files = list(os.listdir(args.data_dir))
     pdf_files = [t for t in pdf_files if t.endswith('.pdf')]
+    if args.limit is not None:
+        pdf_files = pdf_files[:args.limit]
 
     pool = multiprocessing.Pool(processes=4)
     for pdf_file in tqdm(pdf_files):
-        # pool.apply_async(worker, (pdf_file, args.data_dir, args.output_dir, args.unified_output_dir, args.image_scale_factor))
-        print(f"Processing {pdf_file}")
-        worker(pdf_file, args.data_dir, args.output_dir, args.unified_output_dir, args.max_image_dim)
+        pool.apply_async(worker, (pdf_file, args.data_dir, args.output_dir, args.unified_output_dir, args.max_image_dim, args.use_page_subdirs))
+        #worker(pdf_file, args.data_dir, args.output_dir, args.unified_output_dir, args.max_image_dim, args.use_page_subdirs)
 
     pool.close()
     pool.join()

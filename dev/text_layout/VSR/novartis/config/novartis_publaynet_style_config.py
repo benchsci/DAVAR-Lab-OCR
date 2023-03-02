@@ -1,5 +1,5 @@
 DAVAROCR_PATH='/home/jupyter/kweston_persistent_workspace/DAVAR-Lab-OCR/dev/text_layout'
-DATASET_PATH=DAVAROCR_PATH + '/datalist/novartis'
+DATASET_PATH=DAVAROCR_PATH + '/datalist/NovartisCustom'
 BERT_MODEL_PATH='/home/jupyter/.cache/huggingface/hub/models--bert-base-uncased/snapshots/0a6aa9128b6194f4f3c4db429b6cb4891cdb421b'
 # model settings
 model = dict(
@@ -316,27 +316,27 @@ data = dict(
 	workers_per_gpu=2,
 	train=dict(
 		type=dataset_type,
-		ann_file=[DATASET_PATH + '/Datalist/datalist_train_sample.json'],
+		ann_file=[DATASET_PATH + '/Datalist/datalist_train.json'],
 		img_prefix=DATASET_PATH + '/Images/train/',
 		pipeline=train_pipeline,
 		ann_prefix=DATASET_PATH + '/Annos/train/',
 		classes=('others', 'text', 'title', 'list', 'table', 'figure')),
 	val=dict(
 		type=dataset_type,
-		ann_file=[DATASET_PATH + '/Datalist/datalist_val_sample.json'],
+		ann_file=[DATASET_PATH + '/Datalist/datalist_val.json'],
 		img_prefix=DATASET_PATH + '/',
 		pipeline=test_pipeline,
 		ann_prefix=DATASET_PATH + '/Annos/dev/',
 		classes=('text', 'title', 'list', 'table', 'figure'),
-		coco_ann=DATASET_PATH + '/coco_val.json'),
+        coco_ann=DATASET_PATH + '/coco_val.json'),
 	test=dict(
 		type=dataset_type,
-		ann_file=[DATASET_PATH + '/Datalist/datalist_val_sample.json'],
+		ann_file=[DATASET_PATH + '/Datalist/datalist_test.json'],
 		img_prefix=DATASET_PATH + '/',
 		pipeline=test_pipeline,
-		ann_prefix=DATASET_PATH + '/Annos/dev/',
+		ann_prefix=DATASET_PATH + '/Annos/test/',
 		classes=('text', 'title', 'list', 'table', 'figure'),
-		coco_ann=DATASET_PATH + '/coco_val.json')
+        coco_ann=DATASET_PATH + '/coco_val.json')
 	)
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)

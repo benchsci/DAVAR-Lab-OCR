@@ -34,17 +34,21 @@ json_dir = dataset_dir / 'Annos' / args.subset
 json_dir.mkdir(parents=True, exist_ok=True)
 dataset_img_dir = dataset_dir / 'Images' / args.subset
 dataset_img_dir.mkdir(parents=True, exist_ok=True)
-datalist_dir = dataset_dir / 'DataList'
+datalist_dir = dataset_dir / 'Datalist'
 datalist_dir.mkdir(parents=True, exist_ok=True)
 
 loader = DocBankLoader(txt_dir=src_txt_dir, img_dir=src_img_dir)
 converter = DocBankConverter(loader)
 
-examples = glob.glob(os.path.join(src_txt_dir, '*.txt'))
+examples = src_txt_dir.glob('**/*.txt')
 examples = [os.path.basename(per) for per in examples]
 
 datalist_json = {}
 
+# class_labels = ['text', 'title', 'list', 'table', 'figure']
+class_labels=(
+	'abstract', 'author', 'caption', 'date', 'equation', 'figure', 'footer', 'list', 'paragraph', 'reference',
+	'section', 'table', 'title')
 
 def worker(example):
 	example = loader.get_by_filename(example)
@@ -71,7 +75,7 @@ def worker(example):
 		fontnames = example.fontnames  # The fontnames
 		structures = example.structures  # The structure labels
 
-		labels_list = [[per] for per in structures]
+		labels_list = [[class_labels.index(per)] for per in structures]
 		attributes_list = [[font, rgb[0], rgb[1], rgb[2]] for font, rgb in zip(fontnames, rgbs)]
 
 		content_ann['bboxes'] = bboxes
@@ -89,7 +93,7 @@ def worker(example):
 
 		for per_bbox in layout_bboxes:
 			layout_bboxes_list.append([int(per_bbox[0]), int(per_bbox[1]), int(per_bbox[2]), int(per_bbox[3])])
-			layout_labels_list.append([per_bbox[4]])
+			layout_labels_list.append([class_labels.index(per_bbox[4])])
 
 		content_ann2['bboxes'] = layout_bboxes_list
 		content_ann2['labels'] = layout_labels_list
@@ -155,9 +159,9 @@ def worker(example):
 # 	worker(example)
 
 ## multiple processes
-pool = multiprocessing.Pool(processes=50)
+pool = multiprocessing.Pool(processes=4)
 for example in tqdm(examples):
-	# pool.apply_async(worker, (example,))
+	#pool.apply_async(worker, (example,))
 	worker(example)
 pool.close()
 pool.join()

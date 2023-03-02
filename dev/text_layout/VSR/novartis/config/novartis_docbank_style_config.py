@@ -125,7 +125,7 @@ test_pipeline = [
 	     with_care=True,
 	     with_bbox=True,
 	     with_text=True,
-	     with_label=True,
+	     with_label=False,
 	     with_poly_mask=False,
 	     text_profile=dict(
 		     text_max_length=400,
@@ -139,7 +139,7 @@ test_pipeline = [
 	     ),
 	dict(
 		type='MultiScaleFlipAug',
-		img_scale=(600, 800),
+		img_scale=(800, 600),
 		flip=False,
 		transforms=[
 			dict(type='DavarResize', keep_ratio=True),

@@ -1,0 +1,6 @@
+**/*.jpg
+**/*.json
+**/*.txt
+**/*.pyc
+**/.ipynb_checkpoints
+**/*.pth
