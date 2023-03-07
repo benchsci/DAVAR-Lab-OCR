@@ -12,6 +12,7 @@ import pdf2image
 import numpy as np
 from PIL import Image
 from pathlib import Path
+import json
 
 
 def within_bbox(bbox_bound, bbox_in):
@@ -39,12 +40,20 @@ def within_bbox(bbox_bound, bbox_in):
     return iou > 0.95
 
 
-def worker(pdf_file, data_dir, output_dir, unified_output_dir: bool = False, max_image_dim: int = None, use_page_subdirs: bool = False):
+def worker(
+        pdf_file: str,
+        page_no: int,
+        output_dir: str,
+        unified_output_dir: bool = False,
+        max_image_dim: int = None,
+        use_page_subdirs: bool = False,
+        gt_annotations: dict = None
+):
 
 
     print(f"Processing {pdf_file}")
     try:
-        pdf_images = pdf2image.convert_from_path(os.path.join(data_dir, pdf_file))
+        pdf_images = pdf2image.convert_from_path(pdf_file)
     except Exception as e:
         print(e)
         return
@@ -52,10 +61,13 @@ def worker(pdf_file, data_dir, output_dir, unified_output_dir: bool = False, max
 
     page_tokens = []
     try:
-        pdf = pdfplumber.open(os.path.join(data_dir, pdf_file))
+        pdf = pdfplumber.open(pdf_file)
     except Exception as e:
         print(e)
         return
+
+    if len(pdf.pages) > 1:
+        ValueError(f"Warning: {pdf_file} has more than 1 page")
 
     for page_id in tqdm(range(len(pdf.pages))):
         tokens = []
@@ -203,26 +215,36 @@ def worker(pdf_file, data_dir, output_dir, unified_output_dir: bool = False, max
         orig_output_dir.mkdir(parents=True, exist_ok=True)
         anno_output_dir.mkdir(parents=True, exist_ok=True)
 
-        pdf_images[page_id].save(
-            os.path.join(orig_output_dir, doc_fname + '_{}_ori.jpg'.format(str(page_id))))
-        anno_img.save(
-            os.path.join(anno_output_dir, doc_fname + '_{}_ann.jpg'.format(str(page_id))))
-        with open(os.path.join(txt_output_dir, doc_fname + '_{}.txt'.format(str(page_id))),
+        pdf_images[page_id].save(orig_output_dir / Path(doc_fname + '_{}_ori.jpg'.format(str(page_id))).name)
+        anno_img.save(anno_output_dir / Path(doc_fname + '_{}_ann.jpg'.format(str(page_id))).name)
+        with open(txt_output_dir /  Path(doc_fname + '_{}.txt'.format(str(page_id))).name,
                     'w',
                     encoding='utf8') as fp:
             for token in tokens:
                 fp.write('\t'.join(token) + '\n')
+        # save GT
+        with open(gt_output_dir / Path(doc_fname + '_{}_gt.json'.format(str(page_id))).name,
+                    'w',
+                    encoding='utf8') as fp:
+            json.dump(gt_annotations, fp, indent=4)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     ## Required parameters
-    parser.add_argument(
+    mutex_input_group = parser.add_mutually_exclusive_group()
+    mutex_input_group.add_argument(
         "--data_dir",
         default=None,
         type=str,
-        required=True,
         help="The input data dir. Should contain the pdf files.",
+    )
+    input_group2 = mutex_input_group.add_argument_group()
+    input_group2.add_argument(
+        "--pdf_list_file",
+        help="A file containing a list of pdf files to process.",
+        type=Path,
+        required=True
     )
     parser.add_argument(
         "--output_dir",
@@ -255,15 +277,25 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    pdf_files = list(os.listdir(args.data_dir))
-    pdf_files = [t for t in pdf_files if t.endswith('.pdf')]
+
+    if args.data_dir is not None:
+        pdf_files = list(os.listdir(args.data_dir))
+        pdf_files = [(t, None) for t in pdf_files if t.endswith('.pdf')]
+    elif args.pdf_list_file is not None:
+        with open(args.pdf_list_file, 'r') as fp:
+            pdf_files = [line.strip().split(',') for line in fp]
+            # Skip header
+            pdf_files = pdf_files[1:]
+
     if args.limit is not None:
         pdf_files = pdf_files[:args.limit]
 
     pool = multiprocessing.Pool(processes=4)
-    for pdf_file in tqdm(pdf_files):
-        pool.apply_async(worker, (pdf_file, args.data_dir, args.output_dir, args.unified_output_dir, args.max_image_dim, args.use_page_subdirs))
-        #worker(pdf_file, args.data_dir, args.output_dir, args.unified_output_dir, args.max_image_dim, args.use_page_subdirs)
+    for _, (pdf_file, page_no) in enumerate(tqdm(pdf_files)):
+        # pool.apply_async(worker, (pdf_file, args.data_dir, args.output_dir, args.unified_output_dir, args.max_image_dim, args.use_page_subdirs))
+        page_no = int(page_no) if page_no is not None else None
+        key = Path(pdf_file).stem
+        worker(pdf_file, page_no, args.output_dir, args.unified_output_dir, args.max_image_dim, args.use_page_subdirs)
 
     pool.close()
     pool.join()
