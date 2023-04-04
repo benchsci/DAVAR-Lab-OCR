@@ -85,7 +85,7 @@ class BERTgridEmbedding(nn.Module):
 
                 for iter_b_l in range(short_length_w):
                     per_line_ids = ids[iter_b_l]
-                    w_start, h_start, w_end, h_end = gt_bboxes_arr[iter_b_l].round().astype(np.int).tolist()
+                    w_start, h_start, w_end, h_end = gt_bboxes_arr[iter_b_l].round().astype(int).tolist()
                     short_length_c = max(len(per_line_ids)-2, 0)
 
                     if short_length_c > 0:

@@ -129,7 +129,7 @@ def MOT(track_dict, gt_dict, voca_dict, care_rcg):
             gt = gt + cur_frame_care_gt_num
             tracked_num = len(cur_frame_track_res)
             gt_num = len(cur_frame_gt)
-            iou_matrix = np.zeros([max(tracked_num, gt_num), max(tracked_num, gt_num)], np.float)
+            iou_matrix = np.zeros([max(tracked_num, gt_num), max(tracked_num, gt_num)], float)
 
             # Calculating current frame's gt bboxes and predict bboxes iou matrix
             for track_idx in range(tracked_num):
@@ -144,7 +144,7 @@ def MOT(track_dict, gt_dict, voca_dict, care_rcg):
                     gt_poly = evaluate_utils.polygon_from_points(gt_point_list)
                     cur_iou = evaluate_utils.get_intersection_over_union(track_poly, gt_poly)
                     iou_matrix[track_idx, gt_idx] = cur_iou
-            
+
             # Hungarian matching
             row_ind, col_ind = evaluate_utils.Hungary(iou_matrix)
 
@@ -199,7 +199,7 @@ def MOT(track_dict, gt_dict, voca_dict, care_rcg):
 
                         # Only if the iou is greater than threshold and recognition result is correct, can they be TP
                         if mapped_iou_dict[cur_gt_id] > 0.5:
-                            
+
                             # The care_rcg flag is to decide on whether adding recognition constraint
                             if care_rcg:
 
@@ -240,7 +240,7 @@ def MOT(track_dict, gt_dict, voca_dict, care_rcg):
                     # Only if the iou is greater than threshold and recognition result is correct, can they be TP
                     if mapped_care_dict[cur_gt_id] == 1:
                         if mapped_iou_dict[cur_gt_id] > 0.5:
-                            
+
                             if care_rcg:
 
                                 if gt_seq_trans_dict[cur_gt_id] == track_seq_word_dict[cur_tracked_id]:
@@ -337,5 +337,5 @@ if __name__ == '__main__':
     MOT(track_res, gt_res, voca_res, args.care_rcg)
 
     end_time = time.time()
-    
+
     print('Running time: %s Seconds' % (end_time - start_time))

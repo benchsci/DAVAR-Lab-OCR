@@ -231,7 +231,7 @@ def shake_point(img, bbox, crop_pixel_shake=None):
     ratio_obd_w = random.random() * crop_pixel_shake[1]
     ratio_obd_h = random.random() * crop_pixel_shake[3]
     contour = np.array(bbox).reshape(-1, 2)
-    contour_tmp = np.zeros((4, 2), dtype=np.int)
+    contour_tmp = np.zeros((4, 2), dtype=int)
 
     img_h = img.shape[0]
     img_w = img.shape[1]
@@ -262,7 +262,7 @@ def shake_point(img, bbox, crop_pixel_shake=None):
         contour[2][0] = min(max(contour_tmp[2][0], 0), img_w - 1)
         contour[2][1] = min(max(contour_tmp[2][1], 0), img_h - 1)
 
-    contour_tmp = np.zeros((4, 2), dtype=np.int)
+    contour_tmp = np.zeros((4, 2), dtype=int)
 
     x_delta = contour[3][0] - contour[0][0]
     y_delta = contour[3][1] - contour[0][1]
@@ -395,7 +395,7 @@ def scale_point_hori_vert(contour, img_h, img_w, ratio):
     assert len(ratio) == 2
     ratio_obd_w, ratio_obd_h = ratio
     contour = np.array(contour).reshape(-1, 2)
-    contour_tmp = np.zeros((4, 2), dtype=np.int)
+    contour_tmp = np.zeros((4, 2), dtype=int)
 
     x_delt = contour[1][0] - contour[0][0]
     y_delt = contour[1][1] - contour[0][1]
@@ -425,7 +425,7 @@ def scale_point_hori_vert(contour, img_h, img_w, ratio):
         contour[2][0] = min(max(contour_tmp[2][0], 0), img_w - 1)
         contour[2][1] = min(max(contour_tmp[2][1], 0), img_h - 1)
 
-    contour_tmp = np.zeros((4, 2), dtype=np.int)
+    contour_tmp = np.zeros((4, 2), dtype=int)
 
     x_delt = contour[3][0] - contour[0][0]
     y_delt = contour[3][1] - contour[0][1]

@@ -31,7 +31,7 @@ def ATA(track_dict, gt_dict, voca_dict, care_rcg):
             voca_list = voca_dict[video_name]
         else:
             voca_list = list()
-        
+
         # Loading gt info for evaluation
         gt_seq_dict, gt_seq_quality_dict, gt_seq_trans_dict, gt_notcare_num = evaluate_utils.load_gt_ata(
             gt_dict[video_name], voca_list)
@@ -45,7 +45,7 @@ def ATA(track_dict, gt_dict, voca_dict, care_rcg):
             # Loading predict track info
             seq_frame_loc_dict, cur_recog_word = evaluate_utils.load_pre_ata(track_dict[video_name]
                                                                                         [prob_ind])
-            
+
             cur_recog_word = cur_recog_word.upper()
 
             track_seq_word_dict[prob_ind] = cur_recog_word
@@ -56,10 +56,10 @@ def ATA(track_dict, gt_dict, voca_dict, care_rcg):
         gt_num = len(gt_seq_dict)
 
         # Square match matrix, which save the number of match with care and recognition is correct pairs
-        match_without_low_matrix = np.zeros([max(tracked_num, gt_num), max(tracked_num, gt_num)], np.float)
+        match_without_low_matrix = np.zeros([max(tracked_num, gt_num), max(tracked_num, gt_num)], float)
 
         # IOU matrix,
-        iou_matrix = np.zeros([max(tracked_num, gt_num),max(tracked_num, gt_num)],np.float)
+        iou_matrix = np.zeros([max(tracked_num, gt_num),max(tracked_num, gt_num)],float)
 
         for track_idx_num in range(len(track_seq_dict.keys())):
 
@@ -210,5 +210,5 @@ if __name__ == '__main__':
     ATA(track_res, gt_res, voca_res, args.care_rcg)
 
     end_time = time.time()
-    
+
     print('Running time: %s Seconds' % (end_time - start_time))

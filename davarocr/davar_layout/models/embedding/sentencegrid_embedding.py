@@ -92,7 +92,7 @@ class SentencegridEmbedding(nn.Module):
                 valid_num = min(max_length-start_idx, pooler_output.size(0))
                 for iter_b_l in range(valid_num):
                     w_start, h_start, w_end, h_end = gt_bboxes[iter_b][
-                        start_idx + iter_b_l].cpu().numpy().round().astype(np.int).tolist()
+                        start_idx + iter_b_l].cpu().numpy().round().astype(int).tolist()
                     chargrid_map[iter_b, :, h_start: h_end, w_start: w_end] = pooler_output[iter_b_l,
                                                                               :self.embedding_dim, None, None]
                 start_idx += max_length

@@ -72,8 +72,8 @@ class ChargridEmbedding(nn.Module):
 
             for iter_b_l in range(short_length_w):
                 per_line_ids = per_input_ids[iter_b_l]
-                per_line_coords = gt_cbboxes[iter_b][iter_b_l].round().astype(np.int)
-                # per_line_coords = gt_cbboxes[iter_b][iter_b_l].astype(np.int)
+                per_line_coords = gt_cbboxes[iter_b][iter_b_l].round().astype(int)
+                # per_line_coords = gt_cbboxes[iter_b][iter_b_l].astype(int)
 
                 short_length_c = min(len(per_line_ids), per_line_coords.shape[0])
 

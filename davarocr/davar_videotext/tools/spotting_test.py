@@ -205,7 +205,7 @@ if __name__ == '__main__':
                 continue
 
             ori_his_len = len(his_textid_list)
-            his_matched_matrix = np.zeros([ori_his_len], np.int)
+            his_matched_matrix = np.zeros([ori_his_len], int)
 
             # If current img has no text instance
             if len(instance_infos) == 0:
@@ -227,8 +227,8 @@ if __name__ == '__main__':
             # Calc feature similarty, iou, adjacent matrix to match history track, In YORO, we only use feat_sim_matrix
             # and adja_maxtrix to match, You can adjust to your only task
             feat_sim_matrix = cosine_similarity(track_feature, his_feat_array)
-            iou_matrix = np.zeros([len(cur_frame_pos), len(his_loc_list)], np.float)
-            adja_matrix = np.zeros([len(cur_frame_pos), len(his_loc_list)], np.int)
+            iou_matrix = np.zeros([len(cur_frame_pos), len(his_loc_list)], float)
+            adja_matrix = np.zeros([len(cur_frame_pos), len(his_loc_list)], int)
 
             for cur_idx, cur_bbox in enumerate(cur_frame_pos):
                 cur_poly = test_utils.polygon_from_points(cur_bbox)
@@ -251,7 +251,7 @@ if __name__ == '__main__':
             match_matrix = feat_sim_matrix + (0.1 * adja_matrix + eps)
 
             # Reshape the match matrix to square matrix
-            square_cost_matrix = np.zeros([max_num, max_num], np.float)
+            square_cost_matrix = np.zeros([max_num, max_num], float)
 
             for i in range(feat_sim_matrix.shape[0]):
                 for j in range(feat_sim_matrix.shape[1]):
@@ -270,7 +270,7 @@ if __name__ == '__main__':
             row_ind, col_ind = test_utils.hungary(square_cost_matrix)
 
             ori_his_len = len(his_duration_list)
-            his_matched_matrix = np.zeros([ori_his_len], np.int)
+            his_matched_matrix = np.zeros([ori_his_len], int)
 
             # Iter all match pairs, If the similarity match the condition, then allocate pairs into same track seq
             for row_ind_idx, row_item in enumerate(row_ind):

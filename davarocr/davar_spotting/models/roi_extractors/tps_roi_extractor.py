@@ -187,7 +187,7 @@ class TPSRoIExtractor(nn.Module):
             _, height, width = img.size()
             scale_factor = img_meta['scale_factor']
             if len(point) > 0:
-                point = np.array(point, dtype=np.float).reshape(len(point), -1, 2)
+                point = np.array(point, dtype=float).reshape(len(point), -1, 2)
 
                 # Rescale
                 point[:, :, 0] = point[:, :, 0] * scale_factor[0]

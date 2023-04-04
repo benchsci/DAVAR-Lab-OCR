@@ -101,7 +101,7 @@ class PostMaskRCNN(BasePostDetector):
                     if len(curve_poly.shape) < 2:
                         continue
 
-                    curve_poly = curve_poly.astype(np.int)
+                    curve_poly = curve_poly.astype(int)
                     curve_poly = curve_poly.reshape(-1).tolist()
                     det_result['points'].append(curve_poly)
                     det_result['confidence'].append(prob)

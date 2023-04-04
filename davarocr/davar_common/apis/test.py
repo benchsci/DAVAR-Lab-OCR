@@ -49,6 +49,7 @@ def single_gpu_test(model,
     model.eval()
     results = []
     dataset = data_loader.dataset
+    dataset[0]
     prog_bar = DavarProgressBar(len(dataset), min_time_interval=min_time_interval)
     for _, data in enumerate(data_loader):
         with torch.no_grad():
@@ -84,7 +85,9 @@ def single_gpu_test(model,
                         result[i],
                         show=show,
                         out_file=out_file,
-                        score_thr=show_score_thr)
+                        score_thr=show_score_thr,
+                        thickness=1,
+                        font_size=10)
 
             # encode mask results
             if isinstance(result[0], tuple):

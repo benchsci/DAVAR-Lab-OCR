@@ -153,7 +153,7 @@ class CenterlineSegHead(nn.Module):
         for batch_bboxes in gt_poly_bboxes:
             tmp_batch_bboxes = []
             for poly_bbox in batch_bboxes:
-                poly_bbox = np.array(poly_bbox, dtype=np.int).reshape(-1, 2)
+                poly_bbox = np.array(poly_bbox, dtype=int).reshape(-1, 2)
                 # Calculate the area and perimeter of polygon
                 area = cv2.contourArea(poly_bbox)
                 permimeter = cv2.arcLength(poly_bbox, True)

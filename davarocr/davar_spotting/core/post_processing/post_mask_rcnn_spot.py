@@ -107,7 +107,7 @@ class PostMaskRCNNSpot(BasePostSpotter):
                 curve_poly = curve_poly[0].squeeze()
 
                 # Filter out curve poly with less than 2 points.
-                curve_poly = curve_poly.astype(np.int)
+                curve_poly = curve_poly.astype(int)
                 if len(curve_poly.shape) < 2:
                     continue
 
